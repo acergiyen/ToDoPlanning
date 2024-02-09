@@ -15,26 +15,35 @@
 
 <h1>Planning Table</h1>
 
-@if (Model != null)
+@if (Model != null && Model.Developers != null && Model.Developers.Any())
 {
     <table border="1">
         <thead>
-            <tr>
-                <th>Developer Name</th>
-                <th>Task Name</th>
-            </tr>
+        <tr>
+            <th>Developer Name</th>
+            <th>Task Names</th>
+        </tr>
         </thead>
         <tbody>
-            @foreach (var developer in Model.Developers)
-            {
-                foreach (var task in developer.Tasks)
-                {
-                    <tr>
-                        <td>@developer.Name</td>
-                        <td>@task.Name</td>
-                    </tr>
-                }
-            }
+        @foreach (var developer in Model.Developers)
+        {
+            <tr>
+                <td>@developer.Name</td>
+                <td>
+                    @if (developer.Tasks != null && developer.Tasks.Any())
+                    {
+                        foreach (var task in developer.Tasks)
+                        {
+                            <span>@task.Name</span><br />
+                        }
+                    }
+                    else
+                    {
+                        <span>No tasks assigned.</span>
+                    }
+                </td>
+            </tr>
+        }
         </tbody>
     </table>
 

@@ -18,52 +18,124 @@ public class ToDoService : IToDoService
     public async Task<PlanningViewModel> Plan(int maxWorkingHoursForWeek)
     {
         var developers = await _developerRepository.GetAll();
+        var sortedDevelopers = developers.OrderByDescending(d => d.Capacity).ToList();
+        var removableDevelopers = new List<Developer>(sortedDevelopers);
         var tasks = await _taskItemRepository.GetAll();
+        var sortedTasks = tasks.OrderByDescending(t => t.Difficulty).ToList();
+        var assignedTasks = new List<TaskItem>();
 
-        DistributeTasks(developers, tasks,maxWorkingHoursForWeek);
-
-        int totalWeeks = tasks.Max(t => t.Duration) / maxWorkingHoursForWeek + 1;
+        while (sortedTasks.Any())
+        {
+            if (removableDevelopers.Count == 0)
+            {
+                removableDevelopers = new List<Developer>(sortedDevelopers);
+            }
+            var assignedTasksDuration = GetDeveloperTotalDuration(assignedTasks, removableDevelopers[0].Id);
+            if (assignedTasksDuration <= maxWorkingHoursForWeek && assignedTasksDuration+sortedTasks[0].Duration <= maxWorkingHoursForWeek)
+            {
+                var assignedTask = new TaskItem
+                {
+                    Id = sortedTasks[0].Id,
+                    Name = sortedTasks[0].Name,
+                    DeveloperId = removableDevelopers[0].Id
+                };
+                assignedTasks.Add(assignedTask);
+                removableDevelopers.RemoveAt(0);
+                sortedTasks.RemoveAt(0);
+            }
+            else
+            {
+                for (int i = 0; i < removableDevelopers.Count - 1; i++)
+                {
+                        Developer temp = removableDevelopers[i];
+                        sortedDevelopers.RemoveAt(i);
+                        sortedDevelopers.Add(temp);
+                        continue;
+                }
+            }
+        }
 
         var planningViewModel = new PlanningViewModel
         {
-            Developers = developers.Select(d => new PlanningViewModel.Developer
-            {
-                Name = d.Name,
-                Tasks = d.Tasks.Select(t => new PlanningViewModel.Task
-                {
-                    Name = t.Name
-                }).ToList()
-            }).ToList(),
-            Weeks = totalWeeks
+            Developers = new List<PlanningViewModel.Developer>(),
+            Weeks = FindMaxWeek(sortedDevelopers,assignedTasks,maxWorkingHoursForWeek)
+            
         };
+
+        foreach (var dev in sortedDevelopers)
+        {
+            if (dev.Id != 0)
+            {
+                List<PlanningViewModel.Task> assigned = GetAssignedTaskForDeveloper(assignedTasks, dev.Id);
+                PlanningViewModel.Developer developer = new PlanningViewModel.Developer
+                {
+                    Name = dev.Name,
+                    Tasks = assigned
+                };
+                planningViewModel.Developers.Add(developer);
+            }
+        }
+
+        var a = 0;
+        
 
         return planningViewModel;
     }
-    
-    private void DistributeTasks(IEnumerable<Developer> developers, IEnumerable<TaskItem> tasks, int maxWorkingHoursForDeveloper)
-    {
-        tasks = tasks.OrderBy(t => t.Difficulty).ThenBy(t => t.Duration);
 
-        int maxDurationPerWeekPerDeveloper = maxWorkingHoursForDeveloper * 5; 
+    private int GetDeveloperTotalDuration(List<TaskItem> assignedTasks, int? developerID)
+    {
+        int assignedTaskCount = 0;
+        var tasks = assignedTasks.Where(task => task.DeveloperId == developerID);
 
         foreach (var task in tasks)
         {
-            var availableDevelopers = developers
-                .Where(d => d.Capacity >= task.Duration)
-                .OrderBy(d => d.Capacity);
+            assignedTaskCount += task.Duration;
+        }
 
-            var assignableDevelopers = availableDevelopers
-                .Where(d => d.Capacity >= maxDurationPerWeekPerDeveloper);
+        return assignedTaskCount;
+    }
 
-            var developer = assignableDevelopers.Any() ? assignableDevelopers.First() : availableDevelopers.FirstOrDefault();
+    private List<PlanningViewModel.Task> GetAssignedTaskForDeveloper(List<TaskItem> assignedTasks, int? developerId)
+    {
+        List<PlanningViewModel.Task> tasks = new List<PlanningViewModel.Task>();
 
-            if (developer != null)
+        if (developerId.HasValue)
+        {
+            foreach (var assignedTask in assignedTasks.Where(d => d.DeveloperId == developerId).ToList())
             {
-                developer.Tasks ??= new List<TaskItem>();
-                developer.Tasks.Add(task);
-                developer.Capacity -= task.Duration;
+                PlanningViewModel.Task task = new PlanningViewModel.Task();
+                task.Name = assignedTask.Name;
+                tasks.Add(task);
             }
         }
+
+        return tasks;
     }
+
+    private int FindMaxWeek(List<Developer> developers, List<TaskItem> assignedTasks,int maxWorkingHoursForWeek)
+    {
+        int maxWeek = 1;
+        int total = 0;
+        foreach (var developer in developers)
+        {
+          var developerTasks=  assignedTasks.Where(d => d.DeveloperId == developer.Id).ToList();
+
+          foreach (var task in developerTasks)
+          {
+
+              total += task.Duration;
+              if (total / maxWorkingHoursForWeek + 1 > maxWeek)
+              {
+                  maxWeek = total / maxWorkingHoursForWeek + 1;
+              }
+          }
+
+        }
+
+        return maxWeek;
+    }
+    
+
+    
 
 }
