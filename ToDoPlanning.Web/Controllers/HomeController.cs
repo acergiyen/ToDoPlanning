@@ -13,7 +13,6 @@ public class HomeController : Controller
         _toDoService = toDoService;
         _configuration = configuration;
     }
-    // GET
     public async Task<IActionResult> Index()
     {
         var maxWorkingHours = _configuration.GetValue<int>("maxWorkingHoursPerWeek");

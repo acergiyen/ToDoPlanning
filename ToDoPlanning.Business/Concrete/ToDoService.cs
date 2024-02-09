@@ -76,9 +76,6 @@ public class ToDoService : IToDoService
             }
         }
 
-        var a = 0;
-        
-
         return planningViewModel;
     }
 

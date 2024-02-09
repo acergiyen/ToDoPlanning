@@ -31,6 +31,7 @@ Bilgisayarınızda `Docker` yüklü olmalıdır.
 `make update-database` komutu migrationu uygular ve veritabanı hazır hale gelir.
 `make run-console` Console uygulamasını başlatarak mock servislerden dataları database e kayıt eder.
 `make run-web` web uygulamasını başlatır ve anasayfada verileri görebilirsiniz.
+Her hangi bir browserdan `http://localhost:5163/` adresine gittiğinizde ekranda atanan taskları ve kaç hafta süreceğini görebilirsiniz.
 
 #### IDE
 Eğer her hangi bir `IDE` üzerinde çalıştırmak istiyorsanız. `Docker` in yüklü olduğundan emin olun ve connectionStringde ki database ayarlarını yapın.
