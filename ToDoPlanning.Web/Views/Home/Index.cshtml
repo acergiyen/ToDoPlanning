@@ -1,0 +1,49 @@
+@model ToDoPlanning.Models.Response.Web.PlanningViewModel
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planning Table</title>
+</head>
+<body>
+
+<h1>Planning Table</h1>
+
+@if (Model != null)
+{
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Developer Name</th>
+                <th>Task Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var developer in Model.Developers)
+            {
+                foreach (var task in developer.Tasks)
+                {
+                    <tr>
+                        <td>@developer.Name</td>
+                        <td>@task.Name</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    <p>Weeks: @Model.Weeks</p>
+}
+else
+{
+    <p>No data available.</p>
+}
+
+</body>
+</html>

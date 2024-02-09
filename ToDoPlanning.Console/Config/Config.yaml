@@ -1,0 +1,9 @@
+application:
+  name: "ToDoPlanning.Console"
+  environment: "Development"
+  providers:
+    - "https://run.mocky.io/v3/0f7a9194-a5d8-4050-91a6-ab087c8a196b"
+    - "https://run.mocky.io/v3/dcefd558-2d11-4035-9e94-2d6ce27675e0"
+    - "https://run.mocky.io/v3/a7775176-a4c6-4c54-be06-caa440df6985"
+database:
+  connectionString: "Host=localhost;Port=5432;Database=postgres;Username=acergiyen;Password=password;"
